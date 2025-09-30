@@ -3,6 +3,7 @@ import sys
 import pygame as pg
 import random
 import time
+import math
 
 # 画面サイズの定義
 WIDTH, HEIGHT = 1100, 650
@@ -95,6 +96,25 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
     }
     return kk_imgs
 
+def calc_orientation(org_rct: pg.Rect, dst_rct: pg.Rect) -> tuple[float, float]:
+    """
+    orgからdstへのベクトルを正規化して返す
+    引数1 org: 爆弾Rect
+    引数2 dst: こうかとんRect
+    戻り値: 正規化された方向ベクトル(vx, vy)
+    """
+    x_diff, y_diff = dst_rct.centerx - org_rct.centerx, dst_rct.centery - org_rct.centery
+    norm = math.sqrt(x_diff**2 + y_diff**2)
+    
+    # 0除算を防ぐ
+    if norm == 0:
+        return 0, 0
+        
+    vx, vy = x_diff / norm, y_diff / norm
+    return vx, vy
+
+
+
 def main():
     # ゲーム画面の初期化
     pg.display.set_caption("逃げろ！こうかとん")
@@ -141,7 +161,8 @@ def main():
         bb_img = bb_imgs[acc_index]
         acc = bb_accs[acc_index]
         bb_rct = bb_img.get_rect(center=bb_rct.center) # 画像サイズ変更に合わせてRectも更新
-        avx, avy = vx * acc, vy * acc # 速度に加速度を掛ける
+        vx, vy = calc_orientation(bb_rct, kk_rct) 
+        avx, avy = vx * acc * 5, vy * acc * 5  # 最終的な速度を計算
         bb_rct.move_ip(avx, avy)
         yoko, tate = check_bound(bb_rct) # 移動後の位置で画面外判定
         if not yoko:
