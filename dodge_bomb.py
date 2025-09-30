@@ -39,6 +39,7 @@ def main():
                 return
         screen.blit(bg_img, [0, 0]) 
 
+
         key_lst = pg.key.get_pressed()
         sum_mv = [0, 0]
         # 辞書のキーと値を一度にループで取り出す
