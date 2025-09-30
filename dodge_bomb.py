@@ -5,6 +5,7 @@ import random
 import time
 import math
 
+
 # 画面サイズの定義
 WIDTH, HEIGHT = 1100, 650
 
