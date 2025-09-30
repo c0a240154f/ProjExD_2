@@ -2,6 +2,7 @@ import os
 import sys
 import pygame as pg
 import random
+import time
 
 # 画面サイズの定義
 WIDTH, HEIGHT = 1100, 650
@@ -29,6 +30,32 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     if obj_rct.top < 0 or HEIGHT < obj_rct.bottom:
         tate = False
     return yoko, tate
+
+def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー画面を表示し、5秒間待機する
+    引数：画面Surface
+    """
+    # 1. 黒い矩形を描画するための空のSurfaceを作り、黒い矩形を描画する
+    sfc = pg.Surface((WIDTH, HEIGHT))
+    sfc.fill((0, 0, 0)) # 黒で塗りつぶす
+    # 2. 1のSurfaceの透明度を設定する
+    sfc.set_alpha(128) # 透明度を128（半透明）に設定
+    screen.blit(sfc, (0, 0))
+    # 3. 白文字でGame Overと書かれたフォントSurfaceを作る
+    font = pg.font.Font(None, 80) # フォントとサイズを指定
+    txt_sfc = font.render("Game Over", True, (255, 255, 255)) # 白色の文字
+    txt_rct = txt_sfc.get_rect(center=(WIDTH/2, HEIGHT/2)) # 画面中央に配置
+    screen.blit(txt_sfc, txt_rct)
+    # 4. こうかとん画像をロードし、こうかとんSurfaceを作り...
+    sad_kk_img = pg.transform.rotozoom(pg.image.load("fig/8.png"), 0, 2.0) # 例：泣き顔画像
+    sad_kk_rct1 = sad_kk_img.get_rect(center=(WIDTH/2 - 200, HEIGHT/2))
+    sad_kk_rct2 = sad_kk_img.get_rect(center=(WIDTH/2 + 200, HEIGHT/2))
+    screen.blit(sad_kk_img, sad_kk_rct1)
+    screen.blit(sad_kk_img, sad_kk_rct2)
+    # 6. pg.display.update()したら, time.sleep(5)する
+    pg.display.update()
+    time.sleep(5)
 
 def main():
     # ゲーム画面の初期化
@@ -77,7 +104,8 @@ def main():
 
         # こうかとんと爆弾の衝突判定
         if kk_rct.colliderect(bb_rct):
-            print("ゲームオーバー") 
+            # print("ゲームオーバー") # 確認用
+            gameover(screen) # gameover関数を呼び出す
             return  # main関数から抜ける
 
         # 画面描画
