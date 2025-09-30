@@ -113,8 +113,6 @@ def calc_orientation(org_rct: pg.Rect, dst_rct: pg.Rect) -> tuple[float, float]:
     vx, vy = x_diff / norm, y_diff / norm
     return vx, vy
 
-
-
 def main():
     # ゲーム画面の初期化
     pg.display.set_caption("逃げろ！こうかとん")
@@ -132,7 +130,7 @@ def main():
     bb_imgs, bb_accs = init_bbs() # 爆弾Surfaceリストと加速度リストを取得
     bb_img = bb_imgs[0] # 初期状態の爆弾画像
     bb_rct = bb_img.get_rect(center=(random.randint(0, WIDTH), random.randint(0, HEIGHT)))
-    vx, vy = +5, +5
+    vx, vy = +5, +5 # 爆弾の初期速度（使わないが初期化）
 
     while True:
         # イベント処理（ウィンドウの×ボタンなど）
@@ -158,17 +156,12 @@ def main():
 
         # 爆弾の拡大・加速と移動
         acc_index = min(tmr // 500, 9) # 500フレーム毎に1段階変化（最大インデックスは9）
-        bb_img = bb_imgs[acc_index]
-        acc = bb_accs[acc_index]
+        bb_img = bb_imgs[acc_index] # 爆弾画像を切り替え
+        acc = bb_accs[acc_index]    # 加速度を取得
         bb_rct = bb_img.get_rect(center=bb_rct.center) # 画像サイズ変更に合わせてRectも更新
-        vx, vy = calc_orientation(bb_rct, kk_rct) 
-        avx, avy = vx * acc * 5, vy * acc * 5  # 最終的な速度を計算
-        bb_rct.move_ip(avx, avy)
-        yoko, tate = check_bound(bb_rct) # 移動後の位置で画面外判定
-        if not yoko:
-            vx *= -1  # 跳ね返りのために元の速度の符号を反転
-        if not tate:
-            vy *= -1  # 跳ね返りのために元の速度の符号を反転
+        vx, vy = calc_orientation(bb_rct, kk_rct)      # 爆弾からこうかとんへの方向ベクトル
+        avx, avy = vx * acc * 5, vy * acc * 5          # 加速度をかけて速度を決定
+        bb_rct.move_ip(avx, avy)                       # 爆弾を移動
 
         # 衝突判定
         if kk_rct.colliderect(bb_rct):
