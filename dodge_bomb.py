@@ -57,6 +57,20 @@ def gameover(screen: pg.Surface) -> None:
     pg.display.update()
     time.sleep(5)
 
+def init_bbs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    大きさと加速度が異なる爆弾のSurfaceリストと加速度リストを作成する
+    戻り値：(爆弾Surfaceリスト, 加速度リスト)
+    """
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)] # 加速度のリスト [1, 2, ..., 10]
+    for r in range(1, 11):
+        # 大きさの異なる円形Surfaceを作成
+        bb_img = pg.Surface((20*r, 20*r), pg.SRCALPHA)
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r)
+        bb_imgs.append(bb_img)
+    return bb_imgs, bb_accs
+
 def main():
     # ゲーム画面の初期化
     pg.display.set_caption("逃げろ！こうかとん")
@@ -67,11 +81,11 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
 
-    # 爆弾（赤い円）の作成
-    bb_img = pg.Surface((20, 20), pg.SRCALPHA)
-    pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
+    # 爆弾の準備
+    bb_imgs, bb_accs = init_bbs() # 爆弾Surfaceリストと加速度リストを取得
+    bb_img = bb_imgs[0] # 初期状態の爆弾画像
     bb_rct = bb_img.get_rect(center=(random.randint(0, WIDTH), random.randint(0, HEIGHT)))
-    vx, vy = +5, +5  # 爆弾の速度
+    vx, vy = +5, +5
 
     while True:
         # イベント処理（ウィンドウの×ボタンなど）
@@ -94,13 +108,20 @@ def main():
         if not tate:
             kk_rct.move_ip(0, -sum_mv[1])  # 縦方向はみ出し修正
 
-        # 爆弾の移動
-        bb_rct.move_ip(vx, vy)
-        yoko, tate = check_bound(bb_rct)
+        acc_index = min(tmr // 500, 9) # 500フレーム毎に1段階変化（最大インデックスは9）
+        bb_img = bb_imgs[acc_index]
+        acc = bb_accs[acc_index]
+        bb_rct = bb_img.get_rect(center=bb_rct.center) # 画像サイズ変更に合わせてRectも更新
+        avx, avy = vx * acc, vy * acc # 速度に加速度を掛ける
+        bb_rct.move_ip(avx, avy)
+
+        # 爆弾の拡大・加速と移動、画面外判定
+        yoko, tate = check_bound(bb_rct) # 移動後の位置で画面外判定
         if not yoko:
-            vx *= -1  # 横方向反転
+            vx *= -1  # 跳ね返りのために元の速度の符号を反転
         if not tate:
-            vy *= -1  # 縦方向反転
+            vy *= -1  # 跳ね返りのために元の速度の符号を反転
+
 
         # こうかとんと爆弾の衝突判定
         if kk_rct.colliderect(bb_rct):
