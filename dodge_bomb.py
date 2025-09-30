@@ -26,7 +26,6 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
 
-    bb_rct = pg.Rect(100, 100, 20, 20) # 爆弾のSurfaceを作成
     bb_img = pg.Surface((20, 20)) # 直径20のSurface
     pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10) # 中心(10,10),半径10の赤い円を描画
     bb_img.set_colorkey((0, 0, 0)) # 黒い部分を透明にする
@@ -48,22 +47,16 @@ def main():
                 sum_mv[0] += mv[0] # X方向の移動量を加算
                 sum_mv[1] += mv[1] # Y方向の移動量を加算
         kk_rct.move_ip(sum_mv)
+        bb_rct.move_ip(vx, vy) # 爆弾の移動
+
+        screen.blit(bg_img, [0, 0])
         screen.blit(kk_img, kk_rct)
+        screen.blit(bb_img, bb_rct)
+
         pg.display.update()
+
         tmr += 1
         clock.tick(50)
-
-        kk_rct.move_ip(sum_mv)
-
-        #爆弾
-        screen.blit(kk_img, kk_rct)
-
-        # 爆弾の移動と描画
-        bb_rct.move_ip(vx, vy) # 爆弾を移動させる
-        screen.blit(bb_img, bb_rct) # 爆弾を描画する
-
-        pg.display.update()
-
 
 if __name__ == "__main__":
     pg.init()
